@@ -4,8 +4,10 @@ import json
 
 from flask import Flask
 from flask import request
+from flask import Response
 
 app = Flask(__name__)
+
 
 @app.route('/', methods=['GET'])
 def predict():
@@ -19,11 +21,12 @@ def predict():
 
     return check_for_stealing(left, top, right, bottom, path1, path2)
 
+
 def dist(x1, y1, x2, y2):
     return np.sqrt(np.power(x1 - x2, 2) + np.power(y1 - y2, 2))
 
 
-def check_alarm(global_shape, p1, st, p0):
+def is_trying_to_steal(global_shape, p1, st, p0):
     s1, s2, _ = global_shape
     global_dist = dist(s1, 0, s2, 0)
     good_new = p1[st == 1]
@@ -74,8 +77,11 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     # calculate optical flow
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
-    if (check_alarm(frame.shape, p1, st, p0)):
+    if (is_trying_to_steal(frame.shape, p1, st, p0)):
+        status = '{status: SOS}'
+    else:
+        status = '{status: OK}'
 
-        return json.dumps('{status: SOS}')
-
-    return json.dumps('{status: OK}')
+    return Response(response=json.dumps(status),
+                    status=200,
+                    mimetype="application/json")
