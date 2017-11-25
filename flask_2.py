@@ -14,10 +14,10 @@ def predict():
     path1 = request.args.get('path1')
     path2 = request.args.get('path2')
 
-    top = request.args.get('top')
-    left = request.args.get('left')
-    bottom = request.args.get('bottom')
-    right = request.args.get('right')
+    top = (int)(request.args.get('top'))
+    left = (int)(request.args.get('left'))
+    bottom = (int)(request.args.get('bottom'))
+    right = (int)(request.args.get('right'))
 
     return check_for_stealing(left, top, right, bottom, path1, path2)
 
@@ -32,16 +32,20 @@ def is_trying_to_steal(global_shape, p1, st, p0):
     good_new = p1[st == 1]
     good_old = p0[st == 1]
 
+    #print('global_dist', global_dist)
+
     number_of_points_with_long_dist = 0
     for i, (new, old) in enumerate(zip(good_new, good_old)):
         a, b = new.ravel()
         c, d = old.ravel()
-        print(dist(a, b, c, d))
 
         if (dist(a, b, c, d) / global_dist > 0.1):
             number_of_points_with_long_dist += 1
 
-    return ((float)(number_of_points_with_long_dist) / len(p0[st == 1]) > 0.1)
+    #print('number_of_points_with_long_dist', number_of_points_with_long_dist)
+    #print(len(p0[st == 1]))
+
+    return ((float)(number_of_points_with_long_dist) / len(p0[st==1]) > 0.3)
 
 
 def cut_rectangle(rect_left, rect_top, rect_right, rect_bottom, img):
@@ -53,10 +57,10 @@ def cut_rectangle(rect_left, rect_top, rect_right, rect_bottom, img):
 
 def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_path, second_img_path):
     # params for ShiTomasi corner detection
-    feature_params = dict(maxCorners=1000,
+    feature_params = dict(maxCorners=3000,
                           qualityLevel=0.3,
-                          minDistance=3,
-                          blockSize=3)
+                          minDistance=2,
+                          blockSize=5)
 
     # Parameters for lucas kanade optical flow
     lk_params = dict(winSize=(21, 21),
@@ -88,4 +92,4 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
 
 
 if __name__ == "__main__":
-    app.run(port=8888)
+    app.run(port=5001)
