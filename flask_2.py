@@ -78,10 +78,14 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
     if (is_trying_to_steal(frame.shape, p1, st, p0)):
-        status = '{status: SOS}'
+        status = {"status": "SOS"}
     else:
-        status = '{status: OK}'
+        status = {"status": "OK"}
 
     return Response(response=json.dumps(status),
                     status=200,
                     mimetype="application/json")
+
+
+if __name__ == "__main__":
+    app.run(port=8888)
