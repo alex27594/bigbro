@@ -1,16 +1,23 @@
 import numpy as np
 import cv2
+import json
 
 from flask import Flask
 from flask import request
 
 app = Flask(__name__)
 
-
 @app.route('/', methods=['GET'])
 def predict():
-    path = request.args.get('path')
-    pass
+    path1 = request.args.get('path1')
+    path2 = request.args.get('path2')
+
+    top = request.args.get('top')
+    left = request.args.get('left')
+    bottom = request.args.get('bottom')
+    right = request.args.get('right')
+
+    return check_for_stealing(left, top, right, bottom, path1, path2)
 
 def dist(x1, y1, x2, y2):
     return np.sqrt(np.power(x1 - x2, 2) + np.power(y1 - y2, 2))
@@ -67,4 +74,8 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     # calculate optical flow
     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
-    return check_alarm(frame.shape, p1, st, p0)
+    if (check_alarm(frame.shape, p1, st, p0)):
+
+        return json.dumps('{status: SOS}')
+
+    return json.dumps('{status: OK}')
