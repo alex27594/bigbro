@@ -32,7 +32,7 @@ def is_trying_to_steal(global_shape, p1, st, p0):
     good_new = p1[st == 1]
     good_old = p0[st == 1]
 
-    #print('global_dist', global_dist)
+    # print('global_dist', global_dist)
 
     number_of_points_with_long_dist = 0
     for i, (new, old) in enumerate(zip(good_new, good_old)):
@@ -42,10 +42,13 @@ def is_trying_to_steal(global_shape, p1, st, p0):
         if (dist(a, b, c, d) / global_dist > 0.1):
             number_of_points_with_long_dist += 1
 
-    #print('number_of_points_with_long_dist', number_of_points_with_long_dist)
-    #print(len(p0[st == 1]))
+    # print('number_of_points_with_long_dist', number_of_points_with_long_dist)
+    # print(len(p0[st == 1]))
 
-    return ((float)(number_of_points_with_long_dist) / len(p0[st==1]) > 0.3)
+    if (len(p0[st == 1]) == 0):
+        return True
+
+    return ((float)(number_of_points_with_long_dist) / len(p0[st == 1]) > 0.3)
 
 
 def cut_rectangle(rect_left, rect_top, rect_right, rect_bottom, img):
@@ -74,12 +77,19 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
     p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **feature_params)
 
+    if (p0 == None):
+        status = {"status": "SOS"}
+
+        return Response(response=json.dumps(status),
+                        status=200,
+                        mimetype="application/json")
+
     second_img = cv2.imread(second_img_path)
     frame = cut_rectangle(rect_left, rect_top, rect_right, rect_bottom, second_img)
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # calculate optical flow
-    p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
+    p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, None, None, **lk_params)
 
     if (is_trying_to_steal(frame.shape, p1, st, p0)):
         status = {"status": "SOS"}
