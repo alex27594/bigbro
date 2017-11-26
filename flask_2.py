@@ -77,7 +77,7 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
     p0 = cv2.goodFeaturesToTrack(old_gray, mask=None, **feature_params)
 
-    if (p0 == None):
+    if (p0 is None):
         status = {"status": "SOS"}
 
         return Response(response=json.dumps(status),
@@ -89,7 +89,7 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # calculate optical flow
-    p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, None, None, **lk_params)
+    p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
     if (is_trying_to_steal(frame.shape, p1, st, p0)):
         status = {"status": "SOS"}
