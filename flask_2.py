@@ -94,7 +94,17 @@ def check_for_stealing(rect_left, rect_top, rect_right, rect_bottom, first_img_p
     if (is_trying_to_steal(frame.shape, p1, st, p0)):
         status = {"status": "SOS"}
     else:
-        status = {"status": "OK"}
+
+        frame_diff = cv2.absdiff(old_gray, frame_gray)
+        frame_diff[frame_diff < 50] = 0
+        s1, s2 = frame_diff.shape
+        s = np.sum(frame_diff != 0)
+        res = (float)(s) / (s1 * s2)
+
+        if (res > 0.2):
+            status = {"status": "SOS"}
+        else:
+            status = {"status": "OK"}
 
     return Response(response=json.dumps(status),
                     status=200,
